@@ -22,6 +22,7 @@ class PinCodeScreen extends StatefulWidget {
 class _PinCodeScreenState extends State<PinCodeScreen> {
 
   String setPinCode = "";
+  TextEditingController _controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +70,8 @@ class _PinCodeScreenState extends State<PinCodeScreen> {
                         await storageAccess.savePinCode(setPinCode);
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (_) => PasswordsScreen())
+                          MaterialPageRoute(builder:
+                              (_) => PinCodeScreen(StartModeEnum.OPEN))
                         );
                       }
                     },
@@ -77,7 +79,7 @@ class _PinCodeScreenState extends State<PinCodeScreen> {
                       height: 60,
                       width: MediaQuery.of(context).size.width - 60,
                       decoration: BoxDecoration(
-                        color: Colors.black,
+                        color: Colors.green,
                         borderRadius: BorderRadius.circular(30)
                       ),
                       child: Center(
@@ -96,7 +98,81 @@ class _PinCodeScreenState extends State<PinCodeScreen> {
           )
         );
       case StartModeEnum.OPEN:
-        return Scaffold();
+        return Scaffold(
+          body: Stack(
+              children: [
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 30),
+                    child: PinCodeTextField(
+                      length: 6,
+                      obscureText: false,
+                      controller: _controller,
+                      pastedTextStyle: TextStyle(color: Colors.black),
+                      cursorColor: Colors.black,
+                      animationType: AnimationType.fade,
+                      animationDuration: Duration(milliseconds: 300),
+                      pinTheme: PinTheme(
+                          selectedColor: Colors.red,
+                          inactiveColor: Colors.black,
+                          activeColor: Colors.deepPurpleAccent
+                      ),
+                      //errorAnimationController: errorController, // Pass it here
+                      onChanged: (value) {
+                        setState(() {
+                          setPinCode = value;
+                        });
+                      },
+                      appContext: context,
+                    ),
+                  ),
+                ),
+
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 30),
+                    child: CupertinoButton(
+                      onPressed: () async {
+                        if (setPinCode.length == 6){
+                          // save and open menu with passwords
+
+                          bool check = await storageAccess.checkPinCode(setPinCode);
+                          if (check){
+                            Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(builder: (_) => PasswordsScreen())
+                            );
+                          }
+                          else
+                            setState(() {
+                              _controller.text = "";
+                            });
+
+                        }
+                      },
+                      child: Container(
+                        height: 60,
+                        width: MediaQuery.of(context).size.width - 60,
+                        decoration: BoxDecoration(
+                            color: Colors.black,
+                            borderRadius: BorderRadius.circular(30)
+                        ),
+                        child: Center(
+                          child: Text(
+                            "Подтвердить",
+                            style: TextStyle(
+                                color: Colors.white
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+              ],
+            )
+        );
     }
   }
 }
